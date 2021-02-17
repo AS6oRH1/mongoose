@@ -134,7 +134,7 @@ int mg_base64_decode(const char *src, int n, char *dst) {
 struct dns_data {
   struct dns_data *next;
   struct mg_connection *c;
-  unsigned long expire;
+  unsigned long long expire;
   uint16_t txnid;
 };
 
@@ -260,10 +260,10 @@ static void dns_cb(struct mg_connection *c, int ev, void *ev_data,
                    void *fn_data) {
   struct dns_data *d, *tmp;
   if (ev == MG_EV_POLL) {
-    unsigned long now = *(unsigned long *) ev_data;
+    unsigned long long now = *(unsigned long long *) ev_data;
     for (d = s_reqs; d != NULL; d = tmp) {
       tmp = d->next;
-      // LOG(LL_DEBUG, ("%lu %lu dns poll", d->expire, now));
+      // LOG(LL_DEBUG, ("%llu %llu dns poll", d->expire, now));
       if (now > d->expire) mg_error(d->c, "DNS timeout");
     }
   } else if (ev == MG_EV_READ) {
@@ -3072,7 +3072,7 @@ static void connect_conn(struct mg_connection *c) {
 
 void mg_mgr_poll(struct mg_mgr *mgr, int ms) {
   struct mg_connection *c, *tmp;
-  unsigned long now;
+  unsigned long long now;
 
   mg_iotest(mgr, ms);
   now = mg_millis();
@@ -3310,10 +3310,10 @@ void mg_timer_free(struct mg_timer *t) {
   if (*head) *head = t->next;
 }
 
-void mg_timer_poll(unsigned long now_ms) {
+void mg_timer_poll(unsigned long long now_ms) {
   // If time goes back (wrapped around), reset timers
   struct mg_timer *t, *tmp;
-  static unsigned long oldnow;  // Timestamp in a previous invocation
+  static unsigned long long oldnow;  // Timestamp in a previous invocation
   if (oldnow > now_ms) {        // If it is wrapped, reset timers
     for (t = g_timers; t != NULL; t = t->next) t->expire = 0;
   }
@@ -4105,9 +4105,9 @@ void mg_usleep(unsigned long usecs) {
 #endif
 }
 
-unsigned long mg_millis(void) {
+unsigned long long mg_millis(void) {
 #if MG_ARCH == MG_ARCH_WIN32
-  return GetTickCount();
+  return GetTickCount64();
 #elif MG_ARCH == MG_ARCH_ESP32
   return esp_timer_get_time() / 1000;
 #elif MG_ARCH == MG_ARCH_ESP8266
@@ -4117,8 +4117,8 @@ unsigned long mg_millis(void) {
   return xTaskGetTickCount() * portTICK_PERIOD_MS;
 #else
   struct timespec ts;
-  clock_gettime(CLOCK_REALTIME, &ts);
-  return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+  clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
+  return (unsigned long long)(ts.tv_sec * 1000) + (unsigned long long)(ts.tv_nsec / 1000000);
 #endif
 }
 

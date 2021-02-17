@@ -1017,7 +1017,7 @@ Free timer, remove it from the `g_timers` list.
 ### mg\_timer\_poll()
 
 ```c
-void mg_timer_poll(unsigned long uptime_ms);
+void mg_timer_poll(unsigned long long uptime_ms);
 ```
 
 Traverse list of timers, and call them if current timestamp `uptime_ms` is
@@ -1228,7 +1228,7 @@ Return current time as UNIX epoch, using `double` value for sub-second accuracy.
 ### mg\_millis()
 
 ```c
-unsigned long mg_millis(void);
+unsigned long long mg_millis(void);
 ```
 
 Return current uptime in milliseconds.

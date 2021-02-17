@@ -20,10 +20,10 @@ void mg_timer_free(struct mg_timer *t) {
   if (*head) *head = t->next;
 }
 
-void mg_timer_poll(unsigned long now_ms) {
+void mg_timer_poll(unsigned long long now_ms) {
   // If time goes back (wrapped around), reset timers
   struct mg_timer *t, *tmp;
-  static unsigned long oldnow;  // Timestamp in a previous invocation
+  static unsigned long long oldnow;  // Timestamp in a previous invocation
   if (oldnow > now_ms) {        // If it is wrapped, reset timers
     for (t = g_timers; t != NULL; t = t->next) t->expire = 0;
   }

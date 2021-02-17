@@ -8,7 +8,7 @@
 struct dns_data {
   struct dns_data *next;
   struct mg_connection *c;
-  unsigned long expire;
+  unsigned long long expire;
   uint16_t txnid;
 };
 
@@ -134,10 +134,10 @@ static void dns_cb(struct mg_connection *c, int ev, void *ev_data,
                    void *fn_data) {
   struct dns_data *d, *tmp;
   if (ev == MG_EV_POLL) {
-    unsigned long now = *(unsigned long *) ev_data;
+    unsigned long long now = *(unsigned long long *) ev_data;
     for (d = s_reqs; d != NULL; d = tmp) {
       tmp = d->next;
-      // LOG(LL_DEBUG, ("%lu %lu dns poll", d->expire, now));
+      // LOG(LL_DEBUG, ("%llu %llu dns poll", d->expire, now));
       if (now > d->expire) mg_error(d->c, "DNS timeout");
     }
   } else if (ev == MG_EV_READ) {

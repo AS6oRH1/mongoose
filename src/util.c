@@ -308,9 +308,9 @@ void mg_usleep(unsigned long usecs) {
 #endif
 }
 
-unsigned long mg_millis(void) {
+unsigned long long mg_millis(void) {
 #if MG_ARCH == MG_ARCH_WIN32
-  return GetTickCount();
+  return GetTickCount64();
 #elif MG_ARCH == MG_ARCH_ESP32
   return esp_timer_get_time() / 1000;
 #elif MG_ARCH == MG_ARCH_ESP8266
@@ -320,7 +320,7 @@ unsigned long mg_millis(void) {
   return xTaskGetTickCount() * portTICK_PERIOD_MS;
 #else
   struct timespec ts;
-  clock_gettime(CLOCK_REALTIME, &ts);
-  return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+  clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
+  return (unsigned long long)(ts.tv_sec * 1000) + (unsigned long long)(ts.tv_nsec / 1000000);
 #endif
 }
