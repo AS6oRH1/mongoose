@@ -112,9 +112,14 @@ int mg_tls_init(struct mg_connection *c, struct mg_tls_opts *opts) {
     mbedtls_ssl_conf_ca_chain(&tls->conf, &tls->ca, NULL);
 #endif
     if (opts->srvname.len > 0) {
-      char buf[opts->srvname.len + 1];
+      char *buf = (char *) malloc(opts->srvname.len + 1);
+      if (buf == NULL) {
+        mg_error(c, "TLS OOM");
+        goto fail;
+      }
       sprintf(buf, "%.*s", (int) opts->srvname.len, opts->srvname.ptr);
       mbedtls_ssl_set_hostname(&tls->ssl, buf);
+      free(buf);
     }
     mbedtls_ssl_conf_authmode(&tls->conf, MBEDTLS_SSL_VERIFY_REQUIRED);
   }
@@ -276,9 +281,14 @@ int mg_tls_init(struct mg_connection *c, struct mg_tls_opts *opts) {
   }
   if (opts->ciphers != NULL) SSL_set_cipher_list(tls->ssl, opts->ciphers);
   if (opts->srvname.len > 0) {
-    char buf[opts->srvname.len + 1];
+    char *buf = (char *) malloc(opts->srvname.len + 1);
+    if (buf == NULL) {
+      mg_error(c, "TLS OOM");
+      goto fail;
+    }
     sprintf(buf, "%.*s", (int) opts->srvname.len, opts->srvname.ptr);
     SSL_set_tlsext_host_name(tls->ssl, buf);
+    free(buf);
   }
   c->tls = tls;
   c->is_tls = 1;
