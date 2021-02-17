@@ -4117,7 +4117,11 @@ unsigned long long mg_millis(void) {
   return xTaskGetTickCount() * portTICK_PERIOD_MS;
 #else
   struct timespec ts;
-  clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
+  if (clock_gettime(CLOCK_MONOTONIC_RAW, &ts) == -1) {
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) == -1) {
+      clock_gettime(CLOCK_REALTIME, &ts);
+    }
+  }
   return (unsigned long long)(ts.tv_sec * 1000) + (unsigned long long)(ts.tv_nsec / 1000000);
 #endif
 }
